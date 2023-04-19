@@ -295,7 +295,7 @@ public class Main {
         compShips = compAttack(compBoard, compShips);
     }
 
-
+        // hi
     public static void main(String[] args) throws IOException {
         String path = args[0];
         scanner = new Scanner(new File(path));
