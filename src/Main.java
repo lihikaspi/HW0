@@ -8,6 +8,11 @@ public class Main {
     public static Scanner scanner;
     public static Random rnd;
 
+    /**
+     * turns String of numbers to int
+     * @param str String of numbers
+     * @return converted String
+     */
     public static int[] convertToInt(String[] str) {
         int len = str.length;
         int[] converted = new int[len];
@@ -16,12 +21,23 @@ public class Main {
         }
         return converted;
     }
+
+    /**
+     * extracts board sizes from input String
+     * @return array of board sizes
+     */
     public static int[] boardSize() {
         System.out.println("Enter the board size");
         String board = scanner.next();
         String[] nXm = board.split("X");
         return convertToInt(nXm);
     }
+
+    /**
+     * count number of total battleships on the board
+     * @param battleships inventory of all battleship
+     * @return number of battleships
+     */
     public static int countShips(int[][] battleships){
         int count = 0;
         for (int i = 0; i < battleships.length; i++) {
@@ -29,6 +45,11 @@ public class Main {
         }
         return count;
     }
+
+    /**
+     * receives all battleships sizes and quantity
+     * @return inventory of all battleships
+     */
     public static int[][] battleshipSizes() {
         System.out.println("Enter the battleships sizes");
         String battleshipSizes = scanner.next();
@@ -44,14 +65,36 @@ public class Main {
         }
         return newSizes;
     }
+
+    /**
+     * validate orientation
+     * @param x_y_loc array of x, y, orientation
+     * @return is valid orientation
+     */
     public static boolean checkOrientation(int[] x_y_loc) {
         if ((x_y_loc[2] != 0) && (x_y_loc[2] != 1)) return false;
         return true;
     }
+
+    /**
+     * validate tile
+     * @param x of tile
+     * @param y of tile
+     * @param board game board
+     * @return is valid tile
+     */
     public static boolean checkTile(int x, int y, int[][] board) {
         if ((x < 0) || (x >= board.length) || (y < 0) || y > board[0].length) return false;
         return true;
     }
+
+    /**
+     * validate battleship in range
+     * @param x_y_loc array of x, y, orientation
+     * @param size size of battleship
+     * @param board game board
+     * @return is battleship in range
+     */
     public static boolean checkBoundaries(int[] x_y_loc, int size, int[][] board) {
         if (x_y_loc[2] == 0) { // horizontal
             if (x_y_loc[0]+size-1 > board.length) return false;
@@ -60,6 +103,14 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * validate empty spot to place battleship
+     * @param x_y_loc array of x, y, orientation
+     * @param size size of battleship
+     * @param board game board
+     * @return is battleship overlapping abother
+     */
     public static boolean checkOverlap(int[] x_y_loc, int size, int[][] board) {
         for (int i = 0; i < size; i++) {
             if(x_y_loc[2] == 0) { // horizontal
@@ -70,6 +121,14 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * validate no other battleship surrounding
+     * @param x_y_loc array of x, y orientation
+     * @param size size of battleship
+     * @param board game board
+     * @return are there other battleships around
+     */
     public static boolean checkNeighbours(int[] x_y_loc, int size, int[][] board) {
         if (x_y_loc[2] == 0) { // horizontal
             for (int i = 0; i < size + 2; i++) {
@@ -86,7 +145,16 @@ public class Main {
         }
         return true;
     }
-    public static boolean is_Valid(int size, int[] x_y_loc, int[][] board, boolean comp) {
+
+    /**
+     * validate battleship placement
+     * @param size size of battleship
+     * @param x_y_loc array of x, y, orientation
+     * @param board game board
+     * @param comp is computer board
+     * @return is valid to place battleship
+     */
+    public static boolean isValid(int size, int[] x_y_loc, int[][] board, boolean comp) {
         // check #1
         if (!checkOrientation(x_y_loc)) {
             if (!comp) System.out.println("Illegal orientation, try again!");
@@ -115,6 +183,13 @@ public class Main {
 
         return true;
     }
+
+    /**
+     * places a battleship
+     * @param board game board
+     * @param x_y_loc array of x, y, orientation
+     * @param size size of battleship
+     */
     public static void placeBattleship(int[][] board, int[] x_y_loc, int size) {
         if (x_y_loc[2] == 0) { // horizontal
             for (int i = 0; i < size; i++) {
@@ -126,6 +201,12 @@ public class Main {
             }
         }
     }
+
+    /**
+     * place all battleships on player game board
+     * @param battleships inventory of all battleships
+     * @param board game board
+     */
     public static void putInPlace(int[][] battleships, int[][] board) {
         boolean newShiptoPlace = true;
         for (int i = 0; i < battleships.length; i++) {
@@ -136,7 +217,7 @@ public class Main {
                 String place = scanner.next();
                 String[] split = place.split(", ");
                 int[] x_y_loc = convertToInt(split);
-                if (!is_Valid(battleships[i][1], x_y_loc, board, false)) {
+                if (!isValid(battleships[i][1], x_y_loc, board, false)) {
                     newShiptoPlace = false;
                 } else {
                     count--;
@@ -148,6 +229,12 @@ public class Main {
             }
         }
     }
+
+    /**
+     * place all battleships on computer game board
+     * @param board game board
+     * @param battleships inventory of all battleships
+     */
     public static void placeForComp (int[][] board, int[][] battleships) {
         for (int i = 0; i < battleships.length; i++) {
             int count = battleships[i][0];
@@ -156,13 +243,21 @@ public class Main {
                 x_y_loc[0] = rnd.nextInt(board.length);
                 x_y_loc[1] = rnd.nextInt(board[i].length);
                 x_y_loc[2] = rnd.nextInt(2);
-                if (is_Valid(battleships[i][1], x_y_loc, board, true)) {
+                if (isValid(battleships[i][1], x_y_loc, board, true)) {
                     placeBattleship(board, x_y_loc, battleships[i][1]);
                     count--;
                 }
             }
         }
     }
+
+    /**
+     * validate attackable battleship
+     * @param board game board
+     * @param guesses guessing board
+     * @param tile array of x, y
+     * @return is attackable
+     */
     public static boolean isAttackable(int[][] board, int[][] guesses, int[] tile) {
         if (!checkTile(tile[0], tile[1], board)) {
             System.out.println("Illegal tile, try again!");
@@ -174,6 +269,7 @@ public class Main {
         }
         return true;
     }
+
     public static boolean checkRight(int[] tile, int[][] board) {
         int x = tile[0]+1;
         while (x < board.length) {
@@ -226,10 +322,25 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * validate battleship completely hit
+     * @param board game board
+     * @param tile array of x, y
+     * @return is battleship completely hit
+     */
     public static boolean isCompletelyDrowned(int[][] board, int[] tile) {
         if (isDrownedHorizontal(board, tile) || isDrownedVertical(board, tile)) return true;
         return false;
     }
+
+    /**
+     * one turn of player
+     * @param board player game board
+     * @param guesses guessing board
+     * @param numberOfShips battleships left to hit
+     * @return number of battleships left on computer game board
+     */
     public static int playerAttack(int[][] board, int[][] guesses, int numberOfShips) {
         System.out.println("Your current guessing board: ");
         printBoard(guesses);
@@ -255,9 +366,22 @@ public class Main {
         }
         return numberOfShips;
     }
-    public static int compAttack(int[][] board, int numberOfShip) {
 
+    // incomplete
+    /**
+     * one turn of computer
+     * @param board computer game board
+     * @param numberOfShip battleships left to hit
+     * @return number of battleship left on player game board
+     */
+    public static int compAttack(int[][] board, int numberOfShip) {
+        return 0;
     }
+
+    /**
+     * print game board
+     * @param board game board
+     */
     public static void printBoard(int[][] board) {
         System.out.print("  ");
         for (int i = 0; i < board.length; i++) {
@@ -274,6 +398,11 @@ public class Main {
         }
         System.out.println();
     }
+
+    // incomplete
+    /**
+     * single game manager
+     */
     public static void battleshipGame() {
         int[] boardSize = boardSize();
         int[][] playerBoard = new int[boardSize[0]][boardSize[1]];
@@ -291,6 +420,9 @@ public class Main {
         putInPlace(battleships, playerBoard);
         placeForComp(compBoard, battleships);
         int playerShips = countShips(battleships), compShips = countShips(battleships);
+
+        // player --> comp --> player --> comp ...
+        // change name -- too confusing
         playerShips = playerAttack(compBoard, guessingBoard, playerShips);
         compShips = compAttack(compBoard, compShips);
     }
