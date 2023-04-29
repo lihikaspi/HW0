@@ -326,10 +326,14 @@ public class Main {
     /**
      * validate battleship completely hit
      * @param board game board
-     * @param tile array of x, y
+     * @param x x index
+     * @param y y index
      * @return is battleship completely hit
      */
-    public static boolean isCompletelyDrowned(int[][] board, int[] tile) {
+    public static boolean isCompletelyDrowned(int[][] board, int x, int y) {
+        int[] tile = new int[2];
+        tile[0] = x;
+        tile[1] = y;
         if (isDrownedHorizontal(board, tile) || isDrownedVertical(board, tile)) return true;
         return false;
     }
@@ -351,13 +355,12 @@ public class Main {
         if (isAttackable(board, guesses, tile)) {
             if (board[tile[0]][tile[1]] == 0) {
                 System.out.println("That is a miss!");
-                board[tile[0]][tile[1]] = 1;
                 guesses[tile[0]][tile[1]] = 2;
             } else if (board[tile[0]][tile[1]] == 1) {
                 System.out.println("That is a hit!");
                 board[tile[0]][tile[1]] = 2;
                 guesses[tile[0]][tile[1]] = 3;
-                if (isCompletelyDrowned(board, tile)) {
+                if (isCompletelyDrowned(board, tile[0], tile[1])) {
                     numberOfShips -= 1;
                     System.out.println("The computer's battleship has been drowned, "
                             + numberOfShips + " more battleships to go!");
@@ -367,15 +370,49 @@ public class Main {
         return numberOfShips;
     }
 
-    // incomplete
+    // finished comp attack --lihi
     /**
      * one turn of computer
      * @param board computer game board
-     * @param numberOfShip battleships left to hit
+     * @param numberOfShips battleships left to hit
      * @return number of battleship left on player game board
      */
-    public static int compAttack(int[][] board, int numberOfShip) {
-        return 0;
+    public static int compAttack(int[][] board, int numberOfShips) {
+        boolean validTile = false;
+        int x = 0 , y = 0;
+        while (!validTile) {
+            x = rnd.nextInt(board.length);
+            y = rnd.nextInt(board[0].length);
+            validTile = (board[x][y] == 1) || (board[x][y] == 0); // un hit ship or empty space --> good tile
+        }
+        System.out.println("The computer Attacked (" + x + ", " + y + ")");
+        if (board[x][y] == 0) { // empty space
+            System.out.println("That is a miss!");
+            board[x][y] = 4;
+        } else if (board[x][y] == 1) { // un hit ship
+            System.out.println("That is a hit!");
+            board[x][y] = 2;
+            if (isCompletelyDrowned(board, x, y)) {
+                numberOfShips -= 1;
+                System.out.println("Your battleship has been drowned, you have left "
+                        + numberOfShips + " more battleships!");
+            }
+        }
+        return numberOfShips;
+    }
+
+    /**
+     * check if all battleship has been drowned
+     * @param board opponent game board
+     * @return are all battleship been hit
+     */
+    public static boolean checkWinner(int[][] board) {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (board[i][j] == 1) return false; // there is an un hit tile
+            }
+        }
+        return true;
     }
 
     /**
@@ -389,17 +426,18 @@ public class Main {
         }
         for (int i = 0; i < board.length; i++) {
             for (int j = -1; j < board[i].length; j++) {
-                if (j == -1) System.out.print(j+1 + " ");
-                else if (board[i][j] == 0) System.out.print("– "); // free space // unguessed
-                else if (board[i][j] == 1) System.out.print("# "); // unhit ship
-                else if (board[i][j] == 2) System.out.print("X "); // hit ship // incorrect guess
-                else if (board[i][j] == 3) System.out.print("V "); // correct guess
+                if (j == -1) System.out.print(j+1 + " ");          //*game board    //*guessing board
+                else if (board[i][j] == 0) System.out.print("– "); // free space    // un guessed
+                else if (board[i][j] == 1) System.out.print("# "); // un hit ship   // un hit ship
+                else if (board[i][j] == 2) System.out.print("X "); // hit ship      // incorrect guess
+                else if (board[i][j] == 3) System.out.print("V ");                  // correct guess
+                else if (board[i][j] == 4) System.out.print("– "); // comp guess unsuccessful
             }
         }
         System.out.println();
     }
 
-    // incomplete
+    // incomplete -- not entirely sure what's left --lihi
     /**
      * single game manager
      */
@@ -419,12 +457,19 @@ public class Main {
         printBoard(playerBoard);
         putInPlace(battleships, playerBoard);
         placeForComp(compBoard, battleships);
-        int playerShips = countShips(battleships), compShips = countShips(battleships);
+        int playerNeedToHit = countShips(battleships), compNeedToHit = countShips(battleships);
 
         // player --> comp --> player --> comp ...
         // change name -- too confusing
-        playerShips = playerAttack(compBoard, guessingBoard, playerShips);
-        compShips = compAttack(compBoard, compShips);
+        do {
+            playerNeedToHit = playerAttack(compBoard, guessingBoard, playerNeedToHit);
+            compNeedToHit = compAttack(playerBoard, compNeedToHit);
+            System.out.println("Your current game board: ");
+            printBoard(playerBoard);
+        } while (!checkWinner(compBoard) || !checkWinner(playerBoard));
+
+        if (checkWinner(compBoard)) System.out.println("You won the game!");
+        if (checkWinner(playerBoard)) System.out.println("You lost):");
     }
 
         // hi
