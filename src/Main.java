@@ -420,9 +420,10 @@ public class Main {
      * @param board game board
      */
     public static void printBoard(int[][] board) {
-        System.out.print("  ");
         for (int i = 0; i < board.length; i++) {
-            System.out.println(i + " ");
+            if (i < 10) System.out.print("  " + i);
+            else if (i >= 10 && i < 100) System.out.print(" " + i);
+            else if (i >= 100) System.out.print(i);
         }
         for (int i = 0; i < board.length; i++) {
             for (int j = -1; j < board[i].length; j++) {
