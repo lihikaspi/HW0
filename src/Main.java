@@ -270,6 +270,12 @@ public class Main {
         return true;
     }
 
+    /**
+     * check if the tile to the right is in a battleship
+     * @param tile tile position
+     * @param board game board
+     * @return if there is a battleship to the right
+     */
     public static boolean checkRight(int[] tile, int[][] board) {
         int x = tile[0]+1;
         while (x < board.length) {
@@ -279,6 +285,13 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * check if the tile to the left is in a battleship
+     * @param tile tile position
+     * @param board game board
+     * @return if there is a battleship to the left
+     */
     public static boolean checkLeft(int[] tile, int[][] board) {
         int x = tile[0]-1;
         while (x >= 0) {
@@ -288,6 +301,13 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * check if the tile above is in a battleship
+     * @param tile tile position
+     * @param board game board
+     * @return if there is a battleship above
+     */
     public static boolean checkUp(int[] tile, int[][] board) {
         int y = tile[1]-1;
         while (y >= 0) {
@@ -297,6 +317,13 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * check if the tile below is in a battleship
+     * @param tile tile position
+     * @param board game board
+     * @return if there is a battleship below
+     */
     public static boolean checkDown(int[] tile, int[][] board) {
         int y = tile[1]+1;
         while (y >= 0) {
@@ -306,6 +333,13 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * check if all tiles in horizontal ship are hit
+     * @param board game board
+     * @param tile tile position
+     * @return is battleship drowned
+     */
     public static boolean isDrownedHorizontal(int[][] board, int[] tile) {
         if (checkTile(tile[0]+1, tile[1], board)) {
             if (!checkRight(tile, board)) return false;
@@ -314,6 +348,13 @@ public class Main {
         }
         return true;
     }
+
+    /**
+     * check if all tiles in vertical ship are hit
+     * @param board game board
+     * @param tile tile position
+     * @return is battleship drowned
+     */
     public static boolean isDrownedVertical(int[][] board, int[] tile) {
         if (checkTile(tile[0], tile[1]+1, board)) {
             if (!checkDown(tile, board)) return false;
@@ -473,7 +514,7 @@ public class Main {
         if (checkWinner(playerBoard)) System.out.println("You lost):");
     }
 
-        // hi
+
     public static void main(String[] args) throws IOException {
         String path = args[0];
         scanner = new Scanner(new File(path));
