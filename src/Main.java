@@ -97,7 +97,7 @@ public class Main {
      */
     public static boolean checkBoundaries(int[] col_row_loc, int size, int[][] board) {
         if (col_row_loc[2] == 0) { // horizontal
-            if (col_row_loc[1]+size-1 > board[0].length) return false;
+            if (col_row_loc[1]+size >= board[0].length) return false;
         } else { // vertical
             if (col_row_loc[0]+size-1 > board.length) return false;
         }
@@ -113,10 +113,14 @@ public class Main {
      */
     public static boolean checkOverlap(int[] col_row_loc, int size, int[][] board) {
         for (int i = 0; i < size; i++) {
-            if(col_row_loc[2] == 0) { // horizontal
-                if (board[col_row_loc[0]+i][col_row_loc[1]] != 0) return false;
+            if (col_row_loc[2] == 0) { // horizontal
+                if (col_row_loc[0]+i < board.length) {
+                    if (board[col_row_loc[0]+i][col_row_loc[1]] != 0) return false;
+                }
             } else { // vertical
-                if (board[col_row_loc[0]][col_row_loc[1]+i] != 0) return false;
+                if (col_row_loc[1]+i < board[0].length) {
+                    if (board[col_row_loc[0]][col_row_loc[1]+i] != 0) return false;
+                }
             }
         }
         return true;
@@ -133,13 +137,17 @@ public class Main {
         if (col_row_loc[2] == 0) { // horizontal
             for (int i = 0; i < size + 2; i++) {
                 for (int j = 0; j < 3; j++) {
-                    if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != 0) return false;
+                    if (checkTile(col_row_loc[0]-1+i, col_row_loc[1]-1+j, board)){
+                        if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != 0) return false;
+                    }
                 }
             }
         } else { // vertical
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < size+2; j++) {
-                    if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != 0) return false;
+                    if (checkTile(col_row_loc[0]-1+i, col_row_loc[1]-1+j, board)) {
+                        if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != 0) return false;
+                    }
                 }
             }
         }
@@ -193,11 +201,11 @@ public class Main {
     public static void placeBattleship(int[][] board, int[] col_row_loc, int size) {
         if (col_row_loc[2] == 0) { // horizontal
             for (int i = 0; i < size; i++) {
-                board[col_row_loc[0]+i][col_row_loc[1]] = 1;
+                board[col_row_loc[0]][col_row_loc[1]+i] = 1;
             }
         } else { // vertical
             for (int i = 0; i < size; i++) {
-                board[col_row_loc[0]][col_row_loc[1]+i] = 1;
+                board[col_row_loc[0]+i][col_row_loc[1]] = 1;
             }
         }
     }
@@ -276,64 +284,64 @@ public class Main {
     }
 
     /**
-     * check if the tile to the right is in a battleship
+     * check if the tiles to the right are a hit battleship
      * @param tile tile position
      * @param board game board
-     * @return if there is a battleship to the right
+     * @return if there is a hit battleship to the right
      */
     public static boolean checkRight(int[] tile, int[][] board) {
         int col = tile[0]+1;
         while (col < board.length) {
             if (board[col][tile[1]] == 1) return false;
-            if (board[col][tile[1]] == 0) return true;
+            if (board[col][tile[1]] == 0 || board[col][tile[1]] == 4) return true;
             col++;
         }
         return true;
     }
 
     /**
-     * check if the tile to the left is in a battleship
+     * check if the tiles to the left are a hit battleship
      * @param tile tile position
      * @param board game board
-     * @return if there is a battleship to the left
+     * @return if there is a hit battleship to the left
      */
     public static boolean checkLeft(int[] tile, int[][] board) {
         int col = tile[0]-1;
         while (col >= 0) {
             if (board[col][tile[1]] == 1) return false;
-            if (board[col][tile[1]] == 0) return true;
+            if (board[col][tile[1]] == 0 || board[col][tile[1]] == 4) return true;
             col--;
         }
         return true;
     }
 
     /**
-     * check if the tile above is in a battleship
+     * check if the tiles above are a hit battleship
      * @param tile tile position
      * @param board game board
-     * @return if there is a battleship above
+     * @return if there is a hit battleship above
      */
     public static boolean checkUp(int[] tile, int[][] board) {
         int row = tile[1]-1;
         while (row >= 0) {
             if (board[tile[0]][row] == 1) return false;
-            if (board[tile[0]][row] == 0) return true;
+            if (board[tile[0]][row] == 0 || board[tile[0]][row] == 4) return true;
             row--;
         }
         return true;
     }
 
     /**
-     * check if the tile below is in a battleship
+     * check if the tiles below are in a hit battleship
      * @param tile tile position
      * @param board game board
-     * @return if there is a battleship below
+     * @return if there is a hit battleship below
      */
     public static boolean checkDown(int[] tile, int[][] board) {
         int row = tile[1]+1;
         while (row >= 0) {
             if (board[tile[0]][row] == 1) return false;
-            if (board[tile[0]][row] == 0) return true;
+            if (board[tile[0]][row] == 0 || board[tile[0]][row] == 4) return true;
             row++;
         }
         return true;
@@ -347,9 +355,9 @@ public class Main {
      */
     public static boolean isDrownedHorizontal(int[][] board, int[] tile) {
         if (checkTile(tile[0]+1, tile[1], board)) {
-            if (!checkRight(tile, board)) return false;
+            return checkRight(tile, board);
         } else if (checkTile(tile[0]-1, tile[1], board)) {
-            if (!checkLeft(tile, board)) return false;
+            return checkLeft(tile, board);
         }
         return true;
     }
@@ -362,9 +370,9 @@ public class Main {
      */
     public static boolean isDrownedVertical(int[][] board, int[] tile) {
         if (checkTile(tile[0], tile[1]+1, board)) {
-            if (!checkDown(tile, board)) return false;
+            return checkDown(tile, board);
         } else if (checkTile(tile[0], tile[1]-1, board)) {
-            if (!checkUp(tile, board)) return false;
+            return checkUp(tile, board);
         }
         return true;
     }
@@ -380,8 +388,34 @@ public class Main {
         int[] tile = new int[2];
         tile[0] = col;
         tile[1] = row;
-        if (isDrownedHorizontal(board, tile) || isDrownedVertical(board, tile)) return true;
+        int orientation = findOrientation(board, col, row);
+        if (orientation == 0) {
+            if (isDrownedHorizontal(board, tile)){
+                return true;
+            }
+        }
+        if (orientation == 1) {
+            if (isDrownedVertical(board, tile)){
+                return true;
+            }
+        }
         return false;
+    }
+
+    public static int findOrientation(int[][] board, int col, int row) {
+        if (col + 1 < board.length && (board[col + 1][row] == 1 || board[col + 1][row] == 2)){
+            return 1; //vertical
+        }
+        if (col - 1 >= 0 && (board[col - 1][row] == 1 || board[col - 1][row] == 2)){
+            return 1; //vertical
+        }
+        if (row + 1 < board[0].length && (board[col][row + 1] == 1 || board[col][row + 1] == 2)){
+            return 0; //horizontal
+        }
+        if (row - 1 >= 0 && (board[col][row - 1] == 1 || board[col][row - 1] == 2)){
+            return 0; //horizontal
+        }
+        return 0;
     }
 
     /**
@@ -397,7 +431,6 @@ public class Main {
         System.out.println("Enter a tile to attack");
         String col = scanner.next();
         String row = scanner.next();
-        ///String[] tileStr = input.split(", ");
         int[] tile = new int[2];
         tile[0] = Integer.parseInt(col.substring(0, col.indexOf(',')));
         tile[1] = Integer.parseInt((row));
@@ -520,9 +553,9 @@ public class Main {
         // change name -- too confusing
         do {
             playerNeedToHit = playerAttack(compBoard, guessingBoard, playerNeedToHit);
-            if (checkWinner(compBoard)) break;
+            if (checkWinner(compBoard) && playerNeedToHit == 0) break;
             compNeedToHit = compAttack(playerBoard, compNeedToHit);
-            if (checkWinner(playerBoard)) break;
+            if (checkWinner(playerBoard) && compNeedToHit == 0) break;
             System.out.println("Your current game board: ");
             printBoard(playerBoard);
         } while (true);
