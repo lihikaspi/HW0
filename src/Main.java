@@ -214,17 +214,22 @@ public class Main {
             for (int j = 0; j < count; j++) {
                 if (newShiptoPlace)
                     System.out.println("Enter location and orientation for battleship of size " + battleships[i][1]);
-                String place = scanner.next();
-                String[] split = place.split(", ");
-                int[] x_y_loc = convertToInt(split);
+                String x = scanner.next();
+                String y = scanner.next();
+                String orientation = scanner.next();
+                ///String[] split = place.split(", ");
+                int[] x_y_loc = new int[3];
+                x_y_loc[0] = Integer.parseInt(x.substring(0, x.indexOf(',')));
+                x_y_loc[1] = Integer.parseInt(y.substring(0, y.indexOf(',')));
+                x_y_loc[2] = Integer.parseInt(orientation);
                 if (!isValid(battleships[i][1], x_y_loc, board, false)) {
                     newShiptoPlace = false;
                 } else {
                     count--;
                     newShiptoPlace = true;
                     System.out.println("Your current game board:");
-                    printBoard(board);
                     placeBattleship(board, x_y_loc, battleships[i][1]);
+                    printBoard(board);
                 }
             }
         }
@@ -390,9 +395,12 @@ public class Main {
         System.out.println("Your current guessing board: ");
         printBoard(guesses);
         System.out.println("Enter a tile to attack");
-        String input = scanner.next();
-        String[] tileStr = input.split(", ");
-        int[] tile = convertToInt(tileStr);
+        String x = scanner.next();
+        String y = scanner.next();
+        ///String[] tileStr = input.split(", ");
+        int[] tile = new int[2];
+        tile[0] = Integer.parseInt(x.substring(0, x.indexOf(',')));
+        tile[1] = Integer.parseInt((y));
         if (isAttackable(board, guesses, tile)) {
             if (board[tile[0]][tile[1]] == 0) {
                 System.out.println("That is a miss!");
@@ -461,11 +469,15 @@ public class Main {
      * @param board game board
      */
     public static void printBoard(int[][] board) {
+        System.out.print("   ");
+
         for (int i = 0; i < board[0].length; i++) {
             if (i < 10) System.out.print("  " + i);
             else if (i >= 10 && i < 100) System.out.print(" " + i);
             else if (i >= 100) System.out.print(i);
         }
+        System.out.println();
+
         for (int i = 0; i < board.length; i++) {
             if (i < 10) System.out.print("  " + i);
             else if (i >= 10 && i < 100) System.out.print(" " + i);
@@ -477,6 +489,7 @@ public class Main {
                 else if (board[i][j] == 3) System.out.print("  V");                  // correct guess
                 else if (board[i][j] == 4) System.out.print("  –"); // comp guess unsuccessful
             }
+            System.out.println();
         }
         System.out.println();
     }
@@ -507,10 +520,12 @@ public class Main {
         // change name -- too confusing
         do {
             playerNeedToHit = playerAttack(compBoard, guessingBoard, playerNeedToHit);
+            if (checkWinner(compBoard)) break;
             compNeedToHit = compAttack(playerBoard, compNeedToHit);
+            if (checkWinner(playerBoard)) break;
             System.out.println("Your current game board: ");
             printBoard(playerBoard);
-        } while (!checkWinner(compBoard) || !checkWinner(playerBoard));
+        } while (true);
 
         if (checkWinner(compBoard)) System.out.println("You won the game!");
         if (checkWinner(playerBoard)) System.out.println("You lost):");
@@ -518,7 +533,7 @@ public class Main {
 
 
     public static void main(String[] args) throws IOException {
-        String path = args[0];
+        String path = "C:\\Users\\papod\\Downloads\\HW0_files\\HW0_input.txt";
         scanner = new Scanner(new File(path));
         int numberOfGames = scanner.nextInt();
         scanner.nextLine();
