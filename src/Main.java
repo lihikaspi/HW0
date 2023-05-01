@@ -8,6 +8,14 @@ public class Main {
     public static Scanner scanner;
     public static Random rnd;
 
+    public static final int FREE_SPACE = 0;
+    public static final int UN_GUESSED = 0;
+    public static final int UN_HIT_SHIP = 1;
+    public static final int HIT_SHIP = 2;
+    public static final int INCORRECT_GUESS = 2;
+    public static final int CORRECT_GUESS = 3;
+    public static final int COMP_GUESS_UNSUCCESSFUL = 4;
+
     /**
      * turns String of numbers to int
      * @param str String of numbers
@@ -84,7 +92,7 @@ public class Main {
      * @return is valid tile
      */
     public static boolean checkTile(int col, int row, int[][] board) {
-        if ((col < 0) || (col >= board.length) || (row < 0) || row > board[0].length) return false;
+        if ((col < 0) || (col >= board.length) || (row < 0) || row >= board[0].length) return false;
         return true;
     }
 
@@ -225,7 +233,8 @@ public class Main {
                 String col = scanner.next();
                 String row = scanner.next();
                 String orientation = scanner.next();
-                ///String[] split = place.split(", ");
+                //String input = scanner.nextLine();
+                //String[] split = input.split(", ");
                 int[] col_row_loc = new int[3];
                 col_row_loc[0] = Integer.parseInt(col.substring(0, col.indexOf(',')));
                 col_row_loc[1] = Integer.parseInt(row.substring(0, row.indexOf(',')));
@@ -275,8 +284,7 @@ public class Main {
         if (!checkTile(tile[0], tile[1], board)) {
             System.out.println("Illegal tile, try again!");
             return false;
-        }
-        if (guesses[tile[0]][tile[1]] != 0) {
+        } else if (guesses[tile[0]][tile[1]] != 0) {
             System.out.println("Tile already attacked, try again!");
             return false;
         }
@@ -289,11 +297,11 @@ public class Main {
      * @param board game board
      * @return if there is a hit battleship to the right
      */
-    public static boolean checkRight(int[] tile, int[][] board) {
-        int col = tile[0]+1;
-        while (col < board.length) {
-            if (board[col][tile[1]] == 1) return false;
-            if (board[col][tile[1]] == 0 || board[col][tile[1]] == 4) return true;
+    public static boolean isRightDrowned(int[] tile, int[][] board) {
+        int col = tile[1]+1;
+        while (col < board[0].length) {
+            if (board[tile[0]][col] == 1) return false;
+            if (board[tile[0]][col] == 0 || board[tile[0]][col] == 4) return true;
             col++;
         }
         return true;
@@ -305,11 +313,11 @@ public class Main {
      * @param board game board
      * @return if there is a hit battleship to the left
      */
-    public static boolean checkLeft(int[] tile, int[][] board) {
-        int col = tile[0]-1;
+    public static boolean isLeftDrowned(int[] tile, int[][] board) {
+        int col = tile[1]-1;
         while (col >= 0) {
-            if (board[col][tile[1]] == 1) return false;
-            if (board[col][tile[1]] == 0 || board[col][tile[1]] == 4) return true;
+            if (board[tile[0]][col] == UN_HIT_SHIP) return false;
+            if (board[tile[0]][col] == 0 || board[tile[0]][col] == 4) return true;
             col--;
         }
         return true;
@@ -321,11 +329,11 @@ public class Main {
      * @param board game board
      * @return if there is a hit battleship above
      */
-    public static boolean checkUp(int[] tile, int[][] board) {
-        int row = tile[1]-1;
+    public static boolean isUpDrowned(int[] tile, int[][] board) {
+        int row = tile[0]-1;
         while (row >= 0) {
-            if (board[tile[0]][row] == 1) return false;
-            if (board[tile[0]][row] == 0 || board[tile[0]][row] == 4) return true;
+            if (board[row][tile[1]] == 1) return false;
+            if (board[row][tile[1]] == 0 || board[row][tile[1]] == 4) return true;
             row--;
         }
         return true;
@@ -337,11 +345,11 @@ public class Main {
      * @param board game board
      * @return if there is a hit battleship below
      */
-    public static boolean checkDown(int[] tile, int[][] board) {
-        int row = tile[1]+1;
-        while (row >= 0) {
-            if (board[tile[0]][row] == 1) return false;
-            if (board[tile[0]][row] == 0 || board[tile[0]][row] == 4) return true;
+    public static boolean isDownDrowned(int[] tile, int[][] board) {
+        int row = tile[0]+1;
+        while (row < board.length) {
+            if (board[row][tile[1]] == 1) return false;
+            if (board[row][tile[1]] == 0 || board[row][tile[1]] == 4) return true;
             row++;
         }
         return true;
@@ -354,12 +362,15 @@ public class Main {
      * @return is battleship drowned
      */
     public static boolean isDrownedHorizontal(int[][] board, int[] tile) {
-        if (checkTile(tile[0]+1, tile[1], board)) {
-            return checkRight(tile, board);
-        } else if (checkTile(tile[0]-1, tile[1], board)) {
-            return checkLeft(tile, board);
+        boolean isRight = true;
+        boolean isLeft = true;
+        if (checkTile(tile[0], tile[1]+1, board)) {
+            isRight = isRightDrowned(tile, board);
         }
-        return true;
+        if (checkTile(tile[0], tile[1]-1, board)) {
+            isLeft = isLeftDrowned(tile, board);
+        }
+        return (isRight && isLeft);
     }
 
     /**
@@ -369,12 +380,15 @@ public class Main {
      * @return is battleship drowned
      */
     public static boolean isDrownedVertical(int[][] board, int[] tile) {
-        if (checkTile(tile[0], tile[1]+1, board)) {
-            return checkDown(tile, board);
-        } else if (checkTile(tile[0], tile[1]-1, board)) {
-            return checkUp(tile, board);
+        boolean isUp = true;
+        boolean isDown = true;
+        if (checkTile(tile[0]+1, tile[1], board)) {
+            isDown = isDownDrowned(tile, board);
         }
-        return true;
+        if (checkTile(tile[0]-1, tile[1], board)) {
+            isUp = isUpDrowned(tile, board);
+        }
+        return (isUp && isDown);
     }
 
     /**
@@ -426,29 +440,33 @@ public class Main {
      * @return number of battleships left on computer game board
      */
     public static int playerAttack(int[][] board, int[][] guesses, int numberOfShips) {
+        boolean cont = false;
         System.out.println("Your current guessing board: ");
         printBoard(guesses);
         System.out.println("Enter a tile to attack");
-        String col = scanner.next();
-        String row = scanner.next();
-        int[] tile = new int[2];
-        tile[0] = Integer.parseInt(col.substring(0, col.indexOf(',')));
-        tile[1] = Integer.parseInt((row));
-        if (isAttackable(board, guesses, tile)) {
-            if (board[tile[0]][tile[1]] == 0) {
-                System.out.println("That is a miss!");
-                guesses[tile[0]][tile[1]] = 2;
-            } else if (board[tile[0]][tile[1]] == 1) {
-                System.out.println("That is a hit!");
-                board[tile[0]][tile[1]] = 2;
-                guesses[tile[0]][tile[1]] = 3;
-                if (isCompletelyDrowned(board, tile[0], tile[1])) {
-                    numberOfShips -= 1;
-                    System.out.println("The computer's battleship has been drowned, "
-                            + numberOfShips + " more battleships to go!");
+        do {
+            String col = scanner.next();
+            String row = scanner.next();
+            int[] tile = new int[2];
+            tile[0] = Integer.parseInt(col.substring(0, col.indexOf(',')));
+            tile[1] = Integer.parseInt((row));
+            if (isAttackable(board, guesses, tile)) {
+                cont = false;
+                if (board[tile[0]][tile[1]] == 0) {
+                    System.out.println("That is a miss!");
+                    guesses[tile[0]][tile[1]] = 2;
+                } else if (board[tile[0]][tile[1]] == 1) {
+                    System.out.println("That is a hit!");
+                    board[tile[0]][tile[1]] = 2;
+                    guesses[tile[0]][tile[1]] = 3;
+                    if (isCompletelyDrowned(board, tile[0], tile[1])) {
+                        numberOfShips -= 1;
+                        System.out.println("The computer's battleship has been drowned, "
+                                + numberOfShips + " more battleships to go!");
+                    }
                 }
-            }
-        }
+            } else cont = true;
+        } while (cont);
         return numberOfShips;
     }
 
@@ -491,7 +509,7 @@ public class Main {
     public static boolean checkWinner(int[][] board) {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
-                if (board[i][j] == 1) return false; // there is an un hit tile
+                if (board[i][j] == UN_HIT_SHIP) return false; // there is an un hit tile
             }
         }
         return true;
@@ -516,11 +534,11 @@ public class Main {
             else if (i >= 10 && i < 100) System.out.print(" " + i);
             else if (i >= 100) System.out.print(i);
             for (int j = 0; j < board[i].length; j++) {           //*game board    //*guessing board
-                if (board[i][j] == 0) System.out.print("  –");      // free space    // un guessed
-                else if (board[i][j] == 1) System.out.print("  #"); // un hit ship   // un hit ship
-                else if (board[i][j] == 2) System.out.print("  X"); // hit ship      // incorrect guess
-                else if (board[i][j] == 3) System.out.print("  V");                  // correct guess
-                else if (board[i][j] == 4) System.out.print("  –"); // comp guess unsuccessful
+                if (board[i][j] == FREE_SPACE) System.out.print("  –");      // free space    // un guessed
+                else if (board[i][j] == UN_HIT_SHIP) System.out.print("  #"); // un hit ship   // un hit ship
+                else if (board[i][j] == HIT_SHIP) System.out.print("  X"); // hit ship      // incorrect guess
+                else if (board[i][j] == CORRECT_GUESS) System.out.print("  V");                  // correct guess
+                else if (board[i][j] == COMP_GUESS_UNSUCCESSFUL) System.out.print("  –"); // comp guess unsuccessful
             }
             System.out.println();
         }
