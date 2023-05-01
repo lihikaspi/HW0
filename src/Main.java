@@ -461,19 +461,21 @@ public class Main {
      * @param board game board
      */
     public static void printBoard(int[][] board) {
-        for (int i = 0; i < board.length; i++) {
+        for (int i = 0; i < board[0].length; i++) {
             if (i < 10) System.out.print("  " + i);
             else if (i >= 10 && i < 100) System.out.print(" " + i);
             else if (i >= 100) System.out.print(i);
         }
         for (int i = 0; i < board.length; i++) {
-            for (int j = -1; j < board[i].length; j++) {
-                if (j == -1) System.out.print(j+1 + " ");          //*game board    //*guessing board
-                else if (board[i][j] == 0) System.out.print("– "); // free space    // un guessed
-                else if (board[i][j] == 1) System.out.print("# "); // un hit ship   // un hit ship
-                else if (board[i][j] == 2) System.out.print("X "); // hit ship      // incorrect guess
-                else if (board[i][j] == 3) System.out.print("V ");                  // correct guess
-                else if (board[i][j] == 4) System.out.print("– "); // comp guess unsuccessful
+            if (i < 10) System.out.print("  " + i);
+            else if (i >= 10 && i < 100) System.out.print(" " + i);
+            else if (i >= 100) System.out.print(i);
+            for (int j = 0; j < board[i].length; j++) {           //*game board    //*guessing board
+                if (board[i][j] == 0) System.out.print("  –");      // free space    // un guessed
+                else if (board[i][j] == 1) System.out.print("  #"); // un hit ship   // un hit ship
+                else if (board[i][j] == 2) System.out.print("  X"); // hit ship      // incorrect guess
+                else if (board[i][j] == 3) System.out.print("  V");                  // correct guess
+                else if (board[i][j] == 4) System.out.print("  –"); // comp guess unsuccessful
             }
         }
         System.out.println();
