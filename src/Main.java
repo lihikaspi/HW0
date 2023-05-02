@@ -106,9 +106,9 @@ public class Main {
      */
     public static boolean checkBoundaries(int[] col_row_loc, int size, int[][] board) {
         if (col_row_loc[2] == 0) { // horizontal
-            if (col_row_loc[1]+size > board[0].length) return false;
+            if (col_row_loc[1]+size-1 >= board[0].length) return false;
         } else { // vertical
-            if (col_row_loc[0]+size-1 > board.length) return false;
+            if (col_row_loc[0]+size-1 >= board.length) return false;
         }
         return true;
     }
@@ -123,12 +123,12 @@ public class Main {
     public static boolean checkOverlap(int[] col_row_loc, int size, int[][] board) {
         for (int i = 0; i < size; i++) {
             if (col_row_loc[2] == 0) { // horizontal
-                if (col_row_loc[0]+i < board.length) {
-                    if (board[col_row_loc[0]+i][col_row_loc[1]] != 0) return false;
-                }
-            } else { // vertical
                 if (col_row_loc[1]+i < board[0].length) {
                     if (board[col_row_loc[0]][col_row_loc[1]+i] != 0) return false;
+                }
+            } else { // vertical
+                if (col_row_loc[0]+i < board.length) {
+                    if (board[col_row_loc[0]+i][col_row_loc[1]] != 0) return false;
                 }
             }
         }
@@ -261,10 +261,10 @@ public class Main {
     public static void placeForComp (int[][] board, int[][] battleships) {
         for (int i = 0; i < battleships.length; i++) {
             int count = battleships[i][0];
-            for (int j = 0; j < count; j++) {
+            while (count > 0) {
                 int[] col_row_loc = new int[3];
                 col_row_loc[0] = rnd.nextInt(board.length);
-                col_row_loc[1] = rnd.nextInt(board[i].length);
+                col_row_loc[1] = rnd.nextInt(board[0].length);
                 col_row_loc[2] = rnd.nextInt(2);
                 if (isValid(battleships[i][1], col_row_loc, board, true)) {
                     placeBattleship(board, col_row_loc, battleships[i][1]);
@@ -442,7 +442,7 @@ public class Main {
      */
     public static int playerAttack(int[][] board, int[][] guesses, int numberOfShips) {
         boolean cont = false;
-        System.out.println("Your current guessing board: ");
+        System.out.println("Your current guessing board:");
         printBoard(guesses);
         System.out.println("Enter a tile to attack");
         do {
@@ -484,9 +484,9 @@ public class Main {
         while (!validTile) {
             col = rnd.nextInt(board.length);
             row = rnd.nextInt(board[0].length);
-            validTile = (board[col][row] == 1) || (board[col][row] == 0); // un hit ship or empty space --> good tile
+            validTile = (board[col][row] == UN_HIT_SHIP) || (board[col][row] == FREE_SPACE); // un hit ship or empty space --> good tile
         }
-        System.out.println("The computer Attacked (" + col + ", " + row + ")");
+        System.out.println("The computer attacked (" + col + ", " + row + ")");
         if (board[col][row] == 0) { // empty space
             System.out.println("That is a miss!");
             board[col][row] = 4;
@@ -521,25 +521,30 @@ public class Main {
      * @param board game board
      */
     public static void printBoard(int[][] board) {
-        System.out.print("   ");
+        System.out.print("  ");
 
         for (int i = 0; i < board[0].length; i++) {
-            if (i < 10) System.out.print("  " + i);
+            if (i < 10) System.out.print(" " + i);
             else if (i >= 10 && i < 100) System.out.print(" " + i);
-            else if (i >= 100) System.out.print(i);
+            else if (i >= 100) System.out.print(" " + i);
         }
         System.out.println();
 
         for (int i = 0; i < board.length; i++) {
-            if (i < 10) System.out.print("  " + i);
-            else if (i >= 10 && i < 100) System.out.print(" " + i);
-            else if (i >= 100) System.out.print(i);
+            if (board.length >= 100) {
+                if (i < 10) System.out.print("  " + i);
+                else if (i >= 10 && i < 100) System.out.print(" " + i);
+                else if (i >= 100) System.out.print(i);
+            } else if (board.length >= 10 && board.length < 100) {
+                if (i < 10) System.out.print(" " + i);
+                else if (i >= 10 && i < 100) System.out.print(i);
+            } else System.out.print(i);
             for (int j = 0; j < board[i].length; j++) {           //*game board    //*guessing board
-                if (board[i][j] == FREE_SPACE) System.out.print("  –");      // free space    // un guessed
-                else if (board[i][j] == UN_HIT_SHIP) System.out.print("  #"); // un hit ship   // un hit ship
-                else if (board[i][j] == HIT_SHIP) System.out.print("  X"); // hit ship      // incorrect guess
-                else if (board[i][j] == CORRECT_GUESS) System.out.print("  V");                  // correct guess
-                else if (board[i][j] == COMP_GUESS_UNSUCCESSFUL) System.out.print("  –"); // comp guess unsuccessful
+                if (board[i][j] == FREE_SPACE) System.out.print(" –");      // free space    // un guessed
+                else if (board[i][j] == UN_HIT_SHIP) System.out.print(" #"); // un hit ship   // un hit ship
+                else if (board[i][j] == HIT_SHIP) System.out.print(" X"); // hit ship      // incorrect guess
+                else if (board[i][j] == CORRECT_GUESS) System.out.print(" V");                  // correct guess
+                else if (board[i][j] == COMP_GUESS_UNSUCCESSFUL) System.out.print(" –"); // comp guess unsuccessful
             }
             System.out.println();
         }
@@ -563,6 +568,7 @@ public class Main {
             }
         }
         int[][] battleships = battleshipSizes();
+        System.out.println("Your current game board:");
         printBoard(playerBoard);
         putInPlace(battleships, playerBoard);
         placeForComp(compBoard, battleships);
@@ -575,14 +581,19 @@ public class Main {
             if (checkWinner(compBoard) && playerNeedToHit == 0) break;
             compNeedToHit = compAttack(playerBoard, compNeedToHit);
             if (checkWinner(playerBoard) && compNeedToHit == 0) break;
-            System.out.println("Your current game board: ");
+            System.out.println("Your current game board:");
             printBoard(playerBoard);
         } while (true);
 
         if (checkWinner(compBoard)) System.out.println("You won the game!");
-        if (checkWinner(playerBoard)) System.out.println("You lost):");
-
-        String str = scanner.nextLine();
+        if (checkWinner(playerBoard)){
+            System.out.println("Your current game board:");
+            printBoard(playerBoard);
+            System.out.println("You lost ):");
+        }
+        if(scanner.hasNext()){
+            String str = scanner.nextLine();
+        }
     }
 
 
