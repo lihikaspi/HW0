@@ -60,7 +60,8 @@ public class Main {
      */
     public static int[][] battleshipSizes() {
         System.out.println("Enter the battleships sizes");
-        String battleshipSizes = scanner.next();
+        scanner.nextLine();
+        String battleshipSizes = scanner.nextLine();
         String[] numberOf = battleshipSizes.split(" ");
         int len = numberOf.length;
         String[][] sizesOf = new String[len][2];
@@ -105,7 +106,7 @@ public class Main {
      */
     public static boolean checkBoundaries(int[] col_row_loc, int size, int[][] board) {
         if (col_row_loc[2] == 0) { // horizontal
-            if (col_row_loc[1]+size >= board[0].length) return false;
+            if (col_row_loc[1]+size > board[0].length) return false;
         } else { // vertical
             if (col_row_loc[0]+size-1 > board.length) return false;
         }
@@ -142,7 +143,7 @@ public class Main {
      * @return are there other battleships around
      */
     public static boolean checkNeighbours(int[] col_row_loc, int size, int[][] board) {
-        if (col_row_loc[2] == 0) { // horizontal
+        if (col_row_loc[2] == 1) { // vertical
             for (int i = 0; i < size + 2; i++) {
                 for (int j = 0; j < 3; j++) {
                     if (checkTile(col_row_loc[0]-1+i, col_row_loc[1]-1+j, board)){
@@ -150,7 +151,7 @@ public class Main {
                     }
                 }
             }
-        } else { // vertical
+        } else { // horizontal
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < size+2; j++) {
                     if (checkTile(col_row_loc[0]-1+i, col_row_loc[1]-1+j, board)) {
@@ -594,7 +595,7 @@ public class Main {
         System.out.println("Total of " + numberOfGames + " games.");
 
         for (int i = 1; i <= numberOfGames; i++) {
-            String str = scanner.nextLine();
+            scanner.nextLine();
             int seed = scanner.nextInt();
             rnd = new Random(seed);
             scanner.nextLine();
