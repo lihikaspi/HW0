@@ -15,6 +15,8 @@ public class Main {
     public static final int INCORRECT_GUESS = 2;
     public static final int CORRECT_GUESS = 3;
     public static final int COMP_GUESS_UNSUCCESSFUL = 4;
+    public static final int HORIZONTAL = 0;
+    public static final int VERTICAL = 1;
 
     /**
      * turns String of numbers to int
@@ -62,17 +64,17 @@ public class Main {
         System.out.println("Enter the battleships sizes");
         scanner.nextLine();
         String battleshipSizes = scanner.nextLine();
-        String[] numberOf = battleshipSizes.split(" ");
-        int len = numberOf.length;
-        String[][] sizesOf = new String[len][2];
+        String[] input = battleshipSizes.split(" ");
+        int len = input.length;
+        String[][] split = new String[len][2];
         for (int i = 0; i < len; i++) {
-            sizesOf[i] = numberOf[i].split("X");
+            split[i] = input[i].split("X");
         }
-        int [][] newSizes = new int[len][2];
+        int [][] sizes = new int[len][2];
         for (int i = 0; i < len; i++) {
-            newSizes[i] = convertToInt(sizesOf[i]);
+            sizes[i] = convertToInt(split[i]);
         }
-        return newSizes;
+        return sizes;
     }
 
     /**
@@ -81,7 +83,7 @@ public class Main {
      * @return is valid orientation
      */
     public static boolean checkOrientation(int[] col_row_loc) {
-        if ((col_row_loc[2] != 0) && (col_row_loc[2] != 1)) return false;
+        if ((col_row_loc[2] != HORIZONTAL) && (col_row_loc[2] != VERTICAL)) return false;
         return true;
     }
 
@@ -105,7 +107,7 @@ public class Main {
      * @return is battleship in range
      */
     public static boolean checkBoundaries(int[] col_row_loc, int size, int[][] board) {
-        if (col_row_loc[2] == 0) { // horizontal
+        if (col_row_loc[2] == HORIZONTAL) { // horizontal
             if (col_row_loc[1]+size-1 >= board[0].length) return false;
         } else { // vertical
             if (col_row_loc[0]+size-1 >= board.length) return false;
@@ -118,17 +120,17 @@ public class Main {
      * @param col_row_loc array of col, row, orientation
      * @param size size of battleship
      * @param board game board
-     * @return is battleship overlapping abother
+     * @return is battleship overlapping another
      */
     public static boolean checkOverlap(int[] col_row_loc, int size, int[][] board) {
         for (int i = 0; i < size; i++) {
-            if (col_row_loc[2] == 0) { // horizontal
+            if (col_row_loc[2] == HORIZONTAL) { // horizontal
                 if (col_row_loc[1]+i < board[0].length) {
-                    if (board[col_row_loc[0]][col_row_loc[1]+i] != 0) return false;
+                    if (board[col_row_loc[0]][col_row_loc[1]+i] != FREE_SPACE) return false;
                 }
             } else { // vertical
                 if (col_row_loc[0]+i < board.length) {
-                    if (board[col_row_loc[0]+i][col_row_loc[1]] != 0) return false;
+                    if (board[col_row_loc[0]+i][col_row_loc[1]] != FREE_SPACE) return false;
                 }
             }
         }
@@ -143,11 +145,11 @@ public class Main {
      * @return are there other battleships around
      */
     public static boolean checkNeighbours(int[] col_row_loc, int size, int[][] board) {
-        if (col_row_loc[2] == 1) { // vertical
+        if (col_row_loc[2] == VERTICAL) { // vertical
             for (int i = 0; i < size + 2; i++) {
                 for (int j = 0; j < 3; j++) {
                     if (checkTile(col_row_loc[0]-1+i, col_row_loc[1]-1+j, board)){
-                        if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != 0) return false;
+                        if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != FREE_SPACE) return false;
                     }
                 }
             }
@@ -155,7 +157,7 @@ public class Main {
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < size+2; j++) {
                     if (checkTile(col_row_loc[0]-1+i, col_row_loc[1]-1+j, board)) {
-                        if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != 0) return false;
+                        if (board[col_row_loc[0]-1+i][col_row_loc[1]-1+j] != FREE_SPACE) return false;
                     }
                 }
             }
@@ -197,7 +199,6 @@ public class Main {
             if (!comp) System.out.println("Adjacent battleship detected, try again!");
             return false;
         }
-
         return true;
     }
 
@@ -208,13 +209,13 @@ public class Main {
      * @param size size of battleship
      */
     public static void placeBattleship(int[][] board, int[] col_row_loc, int size) {
-        if (col_row_loc[2] == 0) { // horizontal
+        if (col_row_loc[2] == HORIZONTAL) { // horizontal
             for (int i = 0; i < size; i++) {
-                board[col_row_loc[0]][col_row_loc[1]+i] = 1;
+                board[col_row_loc[0]][col_row_loc[1]+i] = UN_HIT_SHIP;
             }
         } else { // vertical
             for (int i = 0; i < size; i++) {
-                board[col_row_loc[0]+i][col_row_loc[1]] = 1;
+                board[col_row_loc[0]+i][col_row_loc[1]] = UN_HIT_SHIP;
             }
         }
     }
@@ -224,7 +225,7 @@ public class Main {
      * @param battleships inventory of all battleships
      * @param board game board
      */
-    public static void putInPlace(int[][] battleships, int[][] board) {
+    public static void placeForPlayer(int[][] battleships, int[][] board) {
         boolean newShiptoPlace = true;
         for (int i = 0; i < battleships.length; i++) {
             int count = battleships[i][0];
@@ -234,8 +235,6 @@ public class Main {
                 String col = scanner.next();
                 String row = scanner.next();
                 String orientation = scanner.next();
-                //String input = scanner.nextLine();
-                //String[] split = input.split(", ");
                 int[] col_row_loc = new int[3];
                 col_row_loc[0] = Integer.parseInt(col.substring(0, col.indexOf(',')));
                 col_row_loc[1] = Integer.parseInt(row.substring(0, row.indexOf(',')));
@@ -301,8 +300,8 @@ public class Main {
     public static boolean isRightDrowned(int[] tile, int[][] board) {
         int col = tile[1]+1;
         while (col < board[0].length) {
-            if (board[tile[0]][col] == 1) return false;
-            if (board[tile[0]][col] == 0 || board[tile[0]][col] == 4) return true;
+            if (board[tile[0]][col] == UN_HIT_SHIP) return false;
+            if (board[tile[0]][col] == FREE_SPACE || board[tile[0]][col] == COMP_GUESS_UNSUCCESSFUL) return true;
             col++;
         }
         return true;
@@ -318,7 +317,7 @@ public class Main {
         int col = tile[1]-1;
         while (col >= 0) {
             if (board[tile[0]][col] == UN_HIT_SHIP) return false;
-            if (board[tile[0]][col] == 0 || board[tile[0]][col] == 4) return true;
+            if (board[tile[0]][col] == FREE_SPACE || board[tile[0]][col] == COMP_GUESS_UNSUCCESSFUL) return true;
             col--;
         }
         return true;
@@ -333,8 +332,8 @@ public class Main {
     public static boolean isUpDrowned(int[] tile, int[][] board) {
         int row = tile[0]-1;
         while (row >= 0) {
-            if (board[row][tile[1]] == 1) return false;
-            if (board[row][tile[1]] == 0 || board[row][tile[1]] == 4) return true;
+            if (board[row][tile[1]] == UN_HIT_SHIP) return false;
+            if (board[row][tile[1]] == FREE_SPACE || board[row][tile[1]] == COMP_GUESS_UNSUCCESSFUL) return true;
             row--;
         }
         return true;
@@ -349,8 +348,8 @@ public class Main {
     public static boolean isDownDrowned(int[] tile, int[][] board) {
         int row = tile[0]+1;
         while (row < board.length) {
-            if (board[row][tile[1]] == 1) return false;
-            if (board[row][tile[1]] == 0 || board[row][tile[1]] == 4) return true;
+            if (board[row][tile[1]] == UN_HIT_SHIP) return false;
+            if (board[row][tile[1]] == FREE_SPACE || board[row][tile[1]] == COMP_GUESS_UNSUCCESSFUL) return true;
             row++;
         }
         return true;
@@ -404,12 +403,12 @@ public class Main {
         tile[0] = col;
         tile[1] = row;
         int orientation = findOrientation(board, col, row);
-        if (orientation == 0) {
+        if (orientation == HORIZONTAL) {
             if (isDrownedHorizontal(board, tile)){
                 return true;
             }
         }
-        if (orientation == 1) {
+        if (orientation == VERTICAL) {
             if (isDrownedVertical(board, tile)){
                 return true;
             }
@@ -417,18 +416,25 @@ public class Main {
         return false;
     }
 
+    /**
+     * find orientation of battleship in given tile
+     * @param board game board
+     * @param col of tile
+     * @param row of tile
+     * @return vertical or horizontal (size 1 gets horizontal)
+     */
     public static int findOrientation(int[][] board, int col, int row) {
-        if (col + 1 < board.length && (board[col + 1][row] == 1 || board[col + 1][row] == 2)){
-            return 1; //vertical
+        if (col + 1 < board.length && (board[col + 1][row] == UN_HIT_SHIP || board[col + 1][row] == HIT_SHIP)){
+            return VERTICAL; //vertical
         }
-        if (col - 1 >= 0 && (board[col - 1][row] == 1 || board[col - 1][row] == 2)){
-            return 1; //vertical
+        if (col - 1 >= 0 && (board[col - 1][row] == UN_HIT_SHIP || board[col - 1][row] == HIT_SHIP)) {
+            return VERTICAL; //vertical
         }
-        if (row + 1 < board[0].length && (board[col][row + 1] == 1 || board[col][row + 1] == 2)){
-            return 0; //horizontal
+        if (row + 1 < board[0].length && (board[col][row + 1] == UN_HIT_SHIP || board[col][row + 1] == HIT_SHIP)){
+            return HORIZONTAL; //horizontal
         }
-        if (row - 1 >= 0 && (board[col][row - 1] == 1 || board[col][row - 1] == 2)){
-            return 0; //horizontal
+        if (row - 1 >= 0 && (board[col][row - 1] == UN_HIT_SHIP || board[col][row - 1] == HIT_SHIP)){
+            return HORIZONTAL; //horizontal
         }
         return 0;
     }
@@ -441,7 +447,7 @@ public class Main {
      * @return number of battleships left on computer game board
      */
     public static int playerAttack(int[][] board, int[][] guesses, int numberOfShips) {
-        boolean cont = false;
+        boolean tryAgain = false;
         System.out.println("Your current guessing board:");
         printBoard(guesses);
         System.out.println("Enter a tile to attack");
@@ -452,26 +458,25 @@ public class Main {
             tile[0] = Integer.parseInt(col.substring(0, col.indexOf(',')));
             tile[1] = Integer.parseInt((row));
             if (isAttackable(board, guesses, tile)) {
-                cont = false;
-                if (board[tile[0]][tile[1]] == 0) {
+                tryAgain = false;
+                if (board[tile[0]][tile[1]] == FREE_SPACE) {
                     System.out.println("That is a miss!");
-                    guesses[tile[0]][tile[1]] = 2;
+                    guesses[tile[0]][tile[1]] = INCORRECT_GUESS;
                 } else if (board[tile[0]][tile[1]] == 1) {
                     System.out.println("That is a hit!");
-                    board[tile[0]][tile[1]] = 2;
-                    guesses[tile[0]][tile[1]] = 3;
+                    board[tile[0]][tile[1]] = HIT_SHIP;
+                    guesses[tile[0]][tile[1]] = CORRECT_GUESS;
                     if (isCompletelyDrowned(board, tile[0], tile[1])) {
                         numberOfShips -= 1;
                         System.out.println("The computer's battleship has been drowned, "
                                 + numberOfShips + " more battleships to go!");
                     }
                 }
-            } else cont = true;
-        } while (cont);
+            } else tryAgain = true;
+        } while (tryAgain);
         return numberOfShips;
     }
 
-    // finished comp attack --lihi
     /**
      * one turn of computer
      * @param board computer game board
@@ -487,12 +492,12 @@ public class Main {
             validTile = (board[col][row] == UN_HIT_SHIP) || (board[col][row] == FREE_SPACE); // un hit ship or empty space --> good tile
         }
         System.out.println("The computer attacked (" + col + ", " + row + ")");
-        if (board[col][row] == 0) { // empty space
+        if (board[col][row] == FREE_SPACE) { // empty space
             System.out.println("That is a miss!");
-            board[col][row] = 4;
-        } else if (board[col][row] == 1) { // un hit ship
+            board[col][row] = COMP_GUESS_UNSUCCESSFUL;
+        } else if (board[col][row] == UN_HIT_SHIP) { // un hit ship
             System.out.println("That is a hit!");
-            board[col][row] = 2;
+            board[col][row] = HIT_SHIP;
             if (isCompletelyDrowned(board, col, row)) {
                 numberOfShips -= 1;
                 System.out.println("Your battleship has been drowned, you have left "
@@ -539,19 +544,18 @@ public class Main {
                 if (i < 10) System.out.print(" " + i);
                 else if (i >= 10 && i < 100) System.out.print(i);
             } else System.out.print(i);
-            for (int j = 0; j < board[i].length; j++) {           //*game board    //*guessing board
-                if (board[i][j] == FREE_SPACE) System.out.print(" –");      // free space    // un guessed
-                else if (board[i][j] == UN_HIT_SHIP) System.out.print(" #"); // un hit ship   // un hit ship
-                else if (board[i][j] == HIT_SHIP) System.out.print(" X"); // hit ship      // incorrect guess
-                else if (board[i][j] == CORRECT_GUESS) System.out.print(" V");                  // correct guess
-                else if (board[i][j] == COMP_GUESS_UNSUCCESSFUL) System.out.print(" –"); // comp guess unsuccessful
+            for (int j = 0; j < board[i].length; j++) {                                 //*game board    //*guessing board
+                if (board[i][j] == FREE_SPACE) System.out.print(" –");                  // free space    // un guessed
+                else if (board[i][j] == UN_HIT_SHIP) System.out.print(" #");            // un hit ship   // un hit ship
+                else if (board[i][j] == HIT_SHIP) System.out.print(" X");               // hit ship      // incorrect guess
+                else if (board[i][j] == CORRECT_GUESS) System.out.print(" V");                           // correct guess
+                else if (board[i][j] == COMP_GUESS_UNSUCCESSFUL) System.out.print(" –");// comp guess unsuccessful
             }
             System.out.println();
         }
         System.out.println();
     }
 
-    // incomplete -- not entirely sure what's left --lihi
     /**
      * single game manager
      */
@@ -562,20 +566,19 @@ public class Main {
         int[][] guessingBoard = new int[boardSize[0]][boardSize[1]];
         for (int i = 0; i < boardSize[0]; i++) {
             for (int j = 0; j < boardSize[1]; j++) {
-                playerBoard[i][j] = 0;
-                compBoard[i][j] = 0;
-                guessingBoard[i][j] = 0;
+                playerBoard[i][j] = FREE_SPACE;
+                compBoard[i][j] = FREE_SPACE;
+                guessingBoard[i][j] = UN_GUESSED;
             }
         }
         int[][] battleships = battleshipSizes();
         System.out.println("Your current game board:");
         printBoard(playerBoard);
-        putInPlace(battleships, playerBoard);
+        placeForPlayer(battleships, playerBoard);
         placeForComp(compBoard, battleships);
         int playerNeedToHit = countShips(battleships), compNeedToHit = countShips(battleships);
 
         // player --> comp --> player --> comp ...
-        // change name -- too confusing
         do {
             playerNeedToHit = playerAttack(compBoard, guessingBoard, playerNeedToHit);
             if (checkWinner(compBoard) && playerNeedToHit == 0) break;
@@ -598,7 +601,7 @@ public class Main {
 
 
     public static void main(String[] args) throws IOException {
-        String path = "C:\\Users\\papod\\Downloads\\HW0_files\\HW0_input.txt";
+        String path = args[0];
         scanner = new Scanner(new File(path));
         int numberOfGames = scanner.nextInt();
         scanner.nextLine();
