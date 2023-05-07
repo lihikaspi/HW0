@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.IOException;
-import java.net.StandardSocketOptions;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -8,20 +7,20 @@ public class Main {
     public static Scanner scanner;
     public static Random rnd;
 
-    public static final int FREE_SPACE = 0;
-    public static final int UN_GUESSED = 0;
-    public static final int UN_HIT_SHIP = 1;
-    public static final int HIT_SHIP = 2;
-    public static final int INCORRECT_GUESS = 2;
-    public static final int CORRECT_GUESS = 3;
-    public static final int COMP_GUESS_UNSUCCESSFUL = 4;
+    public static final int FREE_SPACE = 0; // game board
+    public static final int UN_GUESSED = 0; // guessing board
+    public static final int UN_HIT_SHIP = 1; // game board
+    public static final int HIT_SHIP = 2; // all boards
+    public static final int INCORRECT_GUESS = 2;  // guessing board
+    public static final int CORRECT_GUESS = 3; // guessing board
+    public static final int COMP_GUESS_UNSUCCESSFUL = 4; // player game board
     public static final int HORIZONTAL = 0;
     public static final int VERTICAL = 1;
 
     /**
-     * turns String of numbers to int
-     * @param str String of numbers
-     * @return converted String
+     * turns String of numbers to int (array)
+     * @param str array of Strings of numbers
+     * @return array of converted Strings
      */
     public static int[] convertToInt(String[] str) {
         int len = str.length;
@@ -595,7 +594,7 @@ public class Main {
             System.out.println("You lost ):");
         }
         if(scanner.hasNext()){
-            String str = scanner.nextLine();
+            scanner.nextLine();
         }
     }
 
